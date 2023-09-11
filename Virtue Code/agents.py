@@ -1,38 +1,14 @@
 import mesa
+import numpy
 from numpy import random
 
-class Defector(mesa.Agent):
-    def __init__(self, unique_id, model, wealth=20):
+class MoralAgents(mesa.Agent):
+    def __init__(self, unique_id, model, agent_type):
         super().__init__(unique_id, model)
-        self.public_good_game = model
+        self.agent_type = agent_type  # This attribute differentiates agent types
+        self.shared_attribute = None
 
-        # Assign to self object
-        self.wealth = wealth
-        self.moral_worth = 0
-        self.probability_contributing = self.calculate_probability_contributing()
-        self.contribution_amount = self.calculate_contribution_amount()
-        self.invest = self.calculate_invest()
-
-    def move(self):
-        possible_steps = self.model.grid.get_neighborhood(
-            self.pos, moore=True, include_center=False
-        )
-        new_position = self.random.choice(possible_steps)
-        self.model.grid.move_agent(self, new_position)
-
-    def calculate_probability_contributing(self):
-        """
-
-        A function that defines the probability of contribution according to the agent's moral worth
-
-        """
-
-    def calculate_invest(self):
-        """
-
-        A method that defines the investment behaviors of agents
-
-        """
+    # Shared Behaviors
 
     def moral_worth_assignment(self):  # Change
         """
@@ -92,6 +68,54 @@ class Defector(mesa.Agent):
         else:
             pass
 
-    def step(self):
-        self.move()
-        if self.wealth > 0:
+    def specific_behavior(self):
+        if self.agent_type == "Cooperator":
+            # Type 1 agent behavior
+            pass
+        elif self.agent_type == "Defector":
+            # Type 2 agent behavior
+            pass
+
+    def calculate_probability_contributing(self):
+        """
+
+        A function that defines the probability of contribution according to what an agent's
+        neighors do
+
+        """
+        #Pseucoded
+        if self.agent_type == "Cooperator":
+            if neighors < 4 and invest == True:
+                self.probability_contributing = 0.6
+            if neighors < 5 and invest == True:
+                self.probability_contributing = 0.8
+            if neighors < 6 and invest == True:
+                self.probability_contributing = 0.9
+            else:
+                self.probability_contributing = 0.4
+
+            return self.probability_contributing
+        #Same idea with defectors but probability will be lower than the cooperator's
+        elif self.agent_type == "Defector":
+            if neighors < 4 and invest == True:
+                self.probability_contributing = 0.3
+            if neighors < 5 and invest == True:
+                self.probability_contributing = 0.4
+            if neighors < 6 and invest == True:
+                self.probability_contributing = 0.5
+            else:
+                self.probability_contributing = 0.6
+
+        def calculate_contribution_amount(self):
+            """
+
+            A function that defines the contribution amount according to?
+
+            """
+
+        def calculate_invest(self):
+            """
+
+            A method that defines the investment behaviors of agents
+
+            """
