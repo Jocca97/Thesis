@@ -24,7 +24,7 @@ def agents_portrayal(agent):
     if agent is None:
         return
     portrayal = {"Shape": "circle", "r": 0.5, "Filled": "true", "Layer": 0}
-    if agent.type == 0:
+    if agent.type == "Cooperator":
         portrayal = {
             "Shape": "circle",
             "Filled": "true",
@@ -32,7 +32,7 @@ def agents_portrayal(agent):
             "Color": "green",
             "r": 0.5,
         }
-    if agent.type == 1:
+    if agent.type == "Defector":
         portrayal = {
             "Shape": "circle",
             "Filled": "true",
@@ -47,7 +47,7 @@ model_params = {
     "height": 10,
     "width": 10,
     "num_cooperators": mesa.visualization.Slider("Number of Cooperators", 20, 0, 100, 5),
-    "defector_ratio": mesa.visualization.Slider("Ratio", 0.5, 0.1, 1.0, 0.05),
+    "num_defectors": mesa.visualization.Slider("Number of Defectors", 20, 0, 100, 5),
     "altruistic_punishment_freq": mesa.visualization.Slider("Frequency of Punishment", 4, 0, 300, 1),
 }
 

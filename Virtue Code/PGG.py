@@ -11,11 +11,13 @@ agent_punishment = 3
 
 
 class PublicGoodGame(mesa.Model):
-    def __init__(self, num_agents, altruistic_punishment_freq, width=10,
+    def __init__(self, num_cooperators, num_defectors , altruistic_punishment_freq, width=10,
                  height=10):
-        super().__init__(num_agents, altruistic_punishment_freq, width,
+        super().__init__(num_cooperators, num_defectors, altruistic_punishment_freq, width,
                          height)
 
+        self.num_cooperators = num_cooperators
+        self.num_defectors = num_defectors
         self.common_pool = 0
         self.multiplier = 1.6
         self.investment = 0
@@ -25,48 +27,40 @@ class PublicGoodGame(mesa.Model):
         self.datacollector = mesa.DataCollector(
             model_reporters={"Cooperator Count": count_agent_cooperator,
                              "Defector Count": count_agent_defector,
-                             "Cooperator Average Wealth": cooperator_average_wealth,
-                             "Defector Average Wealth": defector_average_wealth,
-                             "Population Average Wealth": population_average_wealth,
-                             "Cooperator Average Moral Worth:": cooperator_average_moral_worth,
-                             "Defector Average Moral Worth:": defector_average_moral_worth,
-                             "Population Average Moral Worth": population_average_moral_worth,
-                             # "Altruistic Punishment": altruistic_punishment_frequency,
-                             # "Antisocial Punishment": antisocial_punishment_frequency,
-                             "AP Money Spent": money_spent_altruistic_punishment,
-                             "AP Money Lost": money_lost_altruistic_punishment,
-                             "ASP Money Spent": money_spent_antisocial_punishment,
-                             "ASP Money Lost": money_lost_antisocial_punishment,
-                             "Common Pool Wealth": common_pool_wealth,
+                             # "Cooperator Average Wealth": cooperator_average_wealth,
+                             # "Defector Average Wealth": defector_average_wealth,
+                             # "Population Average Wealth": population_average_wealth,
+                             # "Cooperator Average Moral Worth:": cooperator_average_moral_worth,
+                             # "Defector Average Moral Worth:": defector_average_moral_worth,
+                             # "Population Average Moral Worth": population_average_moral_worth,
+                             # # "Altruistic Punishment": altruistic_punishment_frequency,
+                             # # "Antisocial Punishment": antisocial_punishment_frequency,
+                             # "AP Money Spent": money_spent_altruistic_punishment,
+                             # "AP Money Lost": money_lost_altruistic_punishment,
+                             # "ASP Money Spent": money_spent_antisocial_punishment,
+                             # "ASP Money Lost": money_lost_antisocial_punishment,
+                             # "Common Pool Wealth": common_pool_wealth,
                              },
         )
 
         # Create agents
-        for i in range(int(num_cooperators)):
-            # Create Cooperator
-            moral_worth_initial_values = np.random.normal(5, 3.5, num_cooperators)
-            a = Cooperator(self.next_id(), self)
-            a.moral_worth = moral_worth_initial_values[i]
 
-            # Add the agent to a random grid cell
+        for i in range(self.num_cooperators):
+            cooperator = MoralAgents(unique_id=i, model=self, agent_type="Cooperator")
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
-            self.grid.place_agent(a, (x, y))
-            self.schedule.add(a)
+            self.schedule.add(cooperator)
+            self.grid.place_agent(cooperator, (x, y))
             self.datacollector.collect(self)
 
-        # Create Defector
-        for i in range(int(self.num_defectors)):
-            moral_worth_initial_values = np.random.normal(5, 3.5, self.num_defectors)
-            b = Defector(self.next_id(), self)
-            b.moral_worth = moral_worth_initial_values[i]
-
-            # Add the agent to a random grid cell
+        for i in range(self.num_defectors):
+            defector = MoralAgents(unique_id=i + self.num_cooperators, model=self, agent_type="Defector")
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
-            self.grid.place_agent(b, (x, y))
-            self.schedule.add(b)
+            self.schedule.add(defector)
+            self.grid.place_agent(defector, (x, y))
             self.datacollector.collect(self)
+
 
     def set_investment(self, investment):
         """
@@ -150,51 +144,12 @@ class PublicGoodGame(mesa.Model):
         #     self.running = False
 
 
-class Schelling(mesa.Model):
-    """
-    Model class for the Schelling segregation model.
-    """
+def count_agent_cooperator(model):
+    amount_cooperator = sum(1 for agent in model.schedule.agents if agent.agent_type == "cooperator")
 
-    def __init__(self, width=10, height=10, density=0.8, minority_pc=0.2):
-        """ """
+    return amount_cooperator
 
-        self.width = width
-        self.height = height
-        self.density = density
-        self.minority_pc = minority_pc
-        self.common_pool = 0
-        self.multiplier = 1.6
-        self.investment = 0
+def count_agent_defector(model):
+    amount_defector = sum(1 for agent in model.schedule.agents if agent.agent_type == "defector")
 
-        self.schedule = mesa.time.RandomActivation(self)
-        self.grid = mesa.space.MultiGrid(width, height, True)
-
-        # Set up agents
-        for cell in self.grid.coord_iter():
-            x, y = cell[1]
-            if self.random.random() < self.density:
-                agent_type = 1 if self.random.random() < self.minority_pc else 0
-
-                agent = SchellingAgent((x, y), self, agent_type)
-                self.grid.place_agent(agent, (x, y))
-                self.schedule.add(agent)
-
-        # self.running = True
-        # self.datacollector = mesa.DataCollector(
-        #     model_reporters={"Cooperator Count": count_agent_cooperator,
-        #                      "Defector Count": count_agent_defector,
-        #                      "Cooperator Average Wealth": cooperator_average_wealth,
-        #                      "Defector Average Wealth": defector_average_wealth,
-        #                      "Population Average Wealth": population_average_wealth,
-        #                      "Cooperator Average Moral Worth:": cooperator_average_moral_worth,
-        #                      "Defector Average Moral Worth:": defector_average_moral_worth,
-        #                      "Population Average Moral Worth": population_average_moral_worth,
-        #                      # "Altruistic Punishment": altruistic_punishment_frequency,
-        #                      # "Antisocial Punishment": antisocial_punishment_frequency,
-        #                      "AP Money Spent": money_spent_altruistic_punishment,
-        #                      "AP Money Lost": money_lost_altruistic_punishment,
-        #                      "ASP Money Spent": money_spent_antisocial_punishment,
-        #                      "ASP Money Lost": money_lost_antisocial_punishment,
-        #                      "Common Pool Wealth": common_pool_wealth,
-        #                      },
-        # )
+    return amount_defector
